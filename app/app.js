@@ -1,3 +1,4 @@
+var version = 1.0;
 var httpHostName = process.argv[2];
 var host = process.argv[3];
 var user = process.argv[4];
@@ -207,4 +208,5 @@ function start()
         }, 1000 * 5);
     });
 } /* start */
+log('version:' + version);
 start();
