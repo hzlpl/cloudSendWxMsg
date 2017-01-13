@@ -1,9 +1,11 @@
-var version = 1.0;
+var version = '1.0';
+
 var httpHostName = process.argv[2];
 var host = process.argv[3];
 var user = process.argv[4];
 var password = process.argv[5];
 var database = process.argv[6];
+
 var MYSQL =
 {
     db: {
