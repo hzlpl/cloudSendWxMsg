@@ -1,4 +1,4 @@
-var version = '1.0';
+var version = '1.1';
 
 var httpHostName = process.argv[2];
 var host = process.argv[3];
@@ -164,12 +164,13 @@ function processWxMsg(cont2)
     execMySQL(sqlSet.qryWaitSendTemplatMsg).eachSeries(null, function(cont, row) {
         var CS_ID = row.CS_ID;
         var WM_ID = row.WM_ID;
-        var WM_WXUserID = row.WM_WXUserID;
         var WM_Msg = row.WM_Msg;
         then(function(c)
         {
-            if (isNull(CSTokenValueMap[CS_ID])=='' | isNull(CSTokenTimeMap[CS_ID])=='' | new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime() < 1000*60*10)//有效期<10分钟则重新获取
+            log("token有效期剩余毫秒数:"+(new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime()));
+            if (isNull(CSTokenValueMap[CS_ID])=='' | isNull(CSTokenTimeMap[CS_ID])=='' | new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime() < 1000*60*10)//1000*60*10 有效期<10分钟则重新获取
             {
+                log("调用httpGetToken");
                 httpGetToken({CS_ID:CS_ID},"getWeiXinAccess_Token",CS_ID+"获取微信access_token").then(function(contHttp,result){
                     if (result)
                     {
