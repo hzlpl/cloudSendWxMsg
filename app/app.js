@@ -213,4 +213,7 @@ function start()
     });
 } /* start */
 log('version:' + version);
+log("2017-01-13 16:50:50 " + new Date('2017-01-13 16:50:50').getTime());
 start();
+
+
