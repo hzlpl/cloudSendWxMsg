@@ -168,6 +168,7 @@ function processWxMsg(cont2)
         then(function(c)
         {
             log("token有效期剩余毫秒数:"+(new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime()));
+            log(new Date(CSTokenTimeMap[CS_ID]).getTime() + "|" + new Date().getTime());
             if (isNull(CSTokenValueMap[CS_ID])=='' | isNull(CSTokenTimeMap[CS_ID])=='' | new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime() < 1000*60*10)//1000*60*10 有效期<10分钟则重新获取
             {
                 log("调用httpGetToken");
