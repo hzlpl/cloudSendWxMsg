@@ -1,4 +1,4 @@
-var version = '1.2';
+var version = '1.3';
 
 var httpHostName = process.argv[2];
 var host = process.argv[3];
@@ -213,5 +213,4 @@ function start()
     });
 } /* start */
 log('version:' + version);
-log("2017-01-13 16:50:50 " + new Date('2017-01-13 16:50:50').getTime());
 start();
