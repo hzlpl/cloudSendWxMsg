@@ -1,4 +1,4 @@
-var version = '1.3';
+var version = '1.4';
 
 var httpHostName = process.argv[2];
 var host = process.argv[3];
@@ -30,6 +30,7 @@ var http                = require('http');
 var CSTokenValueMap          = {};
 var CSTokenTimeMap           = {};
 
+var getWaitSendMsgDistance = 3;//获取待发送模版消息间隔时间(秒)
 //日期格式化
 Date.prototype.format = function(format) {
     var date = {
@@ -103,9 +104,20 @@ function postMsg(content,token)
         };
         function callback(error, response, data) {
             if (error)
-                log(error);
-            log('postMsg result:' + JSON.stringify(data));
-            cont();
+            {
+                log('post Msg Error:' + error);
+                cont(null,error);
+            }else
+            if (data.errmsg!=="ok")
+            {
+                log('post Msg Error:' + data.errmsg);
+                cont(null,data.errmsg);
+            }
+            else
+            {
+                log('post Msg Success');
+                cont();
+            }
         }
         request(options, callback);
     });
@@ -167,11 +179,9 @@ function processWxMsg(cont2)
         var WM_Msg = row.WM_Msg;
         then(function(c)
         {
-            log("token有效期剩余毫秒数:"+(new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime()));
-            log(new Date(CSTokenTimeMap[CS_ID]).getTime() + "|" + new Date().getTime());
             if (isNull(CSTokenValueMap[CS_ID])=='' | isNull(CSTokenTimeMap[CS_ID])=='' | new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime() < 1000*60*10)//1000*60*10 有效期<10分钟则重新获取
             {
-                log("调用httpGetToken");
+                log("token有效期剩余毫秒数:"+(new Date(CSTokenTimeMap[CS_ID]).getTime() - new Date().getTime()) + "<10分钟 调用httpGetToken重新获取token");
                 httpGetToken({CS_ID:CS_ID},"getWeiXinAccess_Token",CS_ID+"获取微信access_token").then(function(contHttp,result){
                     if (result)
                     {
@@ -189,11 +199,16 @@ function processWxMsg(cont2)
                 c();
             }
         }).then(function(){
-            postMsg(WM_Msg,CSTokenValueMap[CS_ID]).then(function () {
-                //修改已发送标志
-                execMySQL(sqlSet.setMsgHasSend, [WM_ID]).then(function() {
+            postMsg(WM_Msg,CSTokenValueMap[CS_ID]).then(function (postMsgCont,err) {
+                if (err){
                     cont();
-                });
+                }else
+                {
+                    //修改已发送标志
+                    execMySQL(sqlSet.setMsgHasSend, [WM_ID]).then(function() {
+                        cont();
+                    });
+                }
             });
         })
     }).fin(function() {
@@ -209,7 +224,7 @@ function start()
     then.parallel([processWxMsg]).fin(function() {
         setTimeout(function() {
             start();
-        }, 1000 * 5);
+        }, 1000 * getWaitSendMsgDistance);
     });
 } /* start */
 log('version:' + version);
